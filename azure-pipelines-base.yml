@@ -17,7 +17,7 @@ variables:
   imageName: 'edgeworx/darcy-ai-base-$(imageNameSuffix)'
 
 steps:
-  - template: ../docker-task-template.yml
+  - template: ./docker-task-template.yml
     parameters:
       imageName: $(imageName)
       imageTag: '1.0.0'
