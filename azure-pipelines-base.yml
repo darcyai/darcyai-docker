@@ -1,0 +1,24 @@
+trigger:
+  - master
+
+strategy:
+  matrix:
+    x86:
+      poolImageName:
+        vmImage: 'ubuntu-latest'
+      imageNameSuffix: 'x86'
+    armv7l:
+      poolImageName: 'build-farm-rpi4'
+      imageNameSuffix: 'armv7l'
+ 
+pool: $(poolImageName)
+
+variables:
+  imageName: 'edgeworx/darcy-ai-base-$(imageNameSuffix)'
+
+steps:
+  - template: ../docker-task-template.yml
+    parameters:
+      imageName: $(imageName)
+      imageTag: '1.0.0'
+      dockerFile: 'base/Dockerfile'

@@ -1,0 +1,19 @@
+parameters:
+  - name: imageName
+    type: string
+  - name: imageTag
+    type: string
+  - name: dockerFile
+    type: string
+
+  steps:
+      - task: Docker@2
+        displayName: Build and push base image
+        inputs:
+          repository: ${{ imageName }}
+          # command: buildAndPush
+          command: build
+          Dockerfile: ${{ dockerFile }}
+          tags: |
+            latest
+            ${{ imageTag }}
