@@ -4,8 +4,7 @@ trigger:
 strategy:
   matrix:
     x86:
-      poolImageName:
-        vmImage: 'ubuntu-latest'
+      poolImageName: 'Azure Pipelines'
       imageNameSuffix: 'x86'
     armv7l:
       poolImageName: 'build-farm-rpi4'
