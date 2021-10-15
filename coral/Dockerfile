@@ -1,4 +1,4 @@
-ARG BASE_IMAGE_TAG=1.0.0
+ARG BASE_IMAGE_TAG=dev
 FROM edgeworx/darcy-ai-base:$BASE_IMAGE_TAG
 
 RUN echo "deb https://packages.cloud.google.com/apt coral-edgetpu-stable main" | tee /etc/apt/sources.list.d/coral-edgetpu.list
