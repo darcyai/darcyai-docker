@@ -19,7 +19,7 @@ jobs:
           poolImageName: 'Azure Pipelines'
           imageNameSuffix: 'x86'
         armv7l:
-          poolImageName: 'build-farm-rpi4'
+          poolImageName: 'RPi'
           imageNameSuffix: 'armv7l'
     pool: $(poolImageName)
     variables:
