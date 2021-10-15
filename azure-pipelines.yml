@@ -1,5 +1,15 @@
 trigger:
-  - master
+  tags:
+    include:
+      - v*
+  branches:
+    include:
+      - master
+  paths:
+    exclude:
+      - README.md
+      - CHANGELOG.md
+pr: none
   
 jobs:
   - job: Base
@@ -14,11 +24,16 @@ jobs:
     pool: $(poolImageName)
     variables:
       imageName: 'edgeworx/darcy-ai-base-$(imageNameSuffix)'
+      imageTag: 'dev'
     steps:
+      - script: |
+          RELEASE_TAG=$(git describe --tags --abbrev=0)
+          echo "##vso[task.setvariable variable=imageTag]$RELEASE_TAG"
+        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
       - template: ./docker-task-template.yml
         parameters:
           imageName: $(imageName)
-          imageTag: '1.0.0'
+          imageTag: $(imageTag)
           dockerFile: 'base/Dockerfile'
 
   - job: Coral
@@ -33,10 +48,15 @@ jobs:
           imageNameSuffix: 'armv7l'
     pool: $(poolImageName)
     variables:
-      imageName: 'edgeworx/darcy-ai-base-$(imageNameSuffix)'
+      imageName: 'edgeworx/darcy-ai-coral-$(imageNameSuffix)'
+      imageTag: 'dev'
     steps:
+      - script: |
+          RELEASE_TAG=$(git describe --tags --abbrev=0)
+          echo "##vso[task.setvariable variable=imageTag]$RELEASE_TAG"
+        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
       - template: ./docker-task-template.yml
         parameters:
           imageName: $(imageName)
-          imageTag: '1.0.0'
+          imageTag: $(imageTag)
           dockerFile: 'coral/Dockerfile'
