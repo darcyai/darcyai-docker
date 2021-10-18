@@ -51,7 +51,6 @@ jobs:
             -v $(pwd)/tests:/src \
             $(imageName)-base-$(imageNameSuffix):$(imageTag) \
             sh -c "cd /src && python3 -m pip install darcyai-engine && python3 -u base.py"
-        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
         displayName: 'Test base docker image'
 
       - template: ./docker-task-template.yml
@@ -67,5 +66,4 @@ jobs:
             -v $(pwd)/tests:/src \
             $(imageName)-coral-$(imageNameSuffix):$(imageTag) \
             sh -c "cd /src && python3 -m pip install darcyai-coral && python3 -u coral.py"
-        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
         displayName: 'Test coral docker image'
