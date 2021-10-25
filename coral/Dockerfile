@@ -9,4 +9,4 @@ RUN apt-get update
 
 RUN apt-get install libedgetpu1-std python3-pycoral -y
 
-RUN pip3 install numpy==1.21.0 darcyai-coral
+RUN pip3 install numpy==1.21.0
