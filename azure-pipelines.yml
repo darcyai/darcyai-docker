@@ -29,7 +29,7 @@ jobs:
         arm64:
           poolImageName: 'build-farm-coral'
           imageNameSuffix: 'arm64'
-          isArm: "true"
+          isArm: ""
 
     pool: $(poolImageName)
 
