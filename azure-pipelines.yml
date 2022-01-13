@@ -21,9 +21,15 @@ jobs:
         x86:
           poolImageName: 'Azure Pipelines'
           imageNameSuffix: 'x86'
+          isArm: ""
         armv7l:
           poolImageName: 'RPi'
           imageNameSuffix: 'armv7l'
+          isArm: "true"
+        arm64:
+          poolImageName: 'build-farm-coral'
+          imageNameSuffix: 'arm64'
+          isArm: "true"
 
     pool: $(poolImageName)
 
@@ -45,6 +51,7 @@ jobs:
           dockerFile: 'base/Dockerfile'
           imageNameSuffix: '$(imageNameSuffix)'
           step: 'base'
+          isArm: '$(isArm)'
 
       - script: |
           docker run --rm \
@@ -60,6 +67,7 @@ jobs:
           dockerFile: 'coral/Dockerfile'
           imageNameSuffix: '$(imageNameSuffix)'
           step: 'coral'
+          isArm: '$(isArm)'
 
       - script: |
           docker run --rm \
