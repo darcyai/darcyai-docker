@@ -50,8 +50,8 @@ jobs:
           imageTag: $(imageTag)
           dockerFile: 'base/Dockerfile'
           imageNameSuffix: '$(imageNameSuffix)'
-          step: 'base'
           isArm: '$(isArm)'
+          step: 'base'
 
       - script: |
           docker run --rm \
@@ -66,8 +66,8 @@ jobs:
           imageTag: $(imageTag)
           dockerFile: 'coral/Dockerfile'
           imageNameSuffix: '$(imageNameSuffix)'
-          step: 'coral'
           isArm: '$(isArm)'
+          step: 'coral'
 
       - script: |
           docker run --rm \

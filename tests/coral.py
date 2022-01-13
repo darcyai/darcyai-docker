@@ -3,7 +3,7 @@ from darcyai_engine.pipeline import Pipeline
 from sample_output_stream import SampleOutputStream
 from sample_input_stream import SampleInputStream
 
-def perceptor_input_callback(input_data, pom):
+def perceptor_input_callback(input_data, pom, config):
     return input_data
 
 
@@ -18,7 +18,7 @@ pipeline = Pipeline(input_stream)
 
 pipeline.add_output_stream("output", output_stream_callback, output_stream)
 
-p1 = PerceptorMock(model_path="models/p1.tflite")
+p1 = PerceptorMock()
 pipeline.add_perceptor("p1", p1, accelerator_idx=0, input_callback=perceptor_input_callback)
 
 pipeline.run()

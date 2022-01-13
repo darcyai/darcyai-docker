@@ -32,4 +32,3 @@ RUN if [ -z "$IS_ARM" ]; then \
         https://www.piwheels.org/simple/imutils/imutils-0.5.4-py3-none-any.whl#sha256=f233020af4b67d42caea543b8a8c9aebbb7f5159d7ef6d7dc8980282a20ade88 \
         https://www.piwheels.org/simple/opencv-python/opencv_python-4.5.3.56-cp37-cp37m-linux_armv7l.whl#sha256=b81fe5f22e3c3adee43605509710ae7966263f5a7519e8342ee9e11cc5bb4a07; \
     fi
-
