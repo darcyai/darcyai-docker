@@ -11,8 +11,6 @@ parameters:
     type: string
   - name: step
     type: string
-  - name: isArm
-    type: string
 
 steps:
   - task: Docker@2
