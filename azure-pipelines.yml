@@ -18,18 +18,15 @@ jobs:
   
     strategy:
       matrix:
-        x86:
+        amd64:
           poolImageName: 'Azure Pipelines'
-          imageNameSuffix: 'x86'
-          isArm: ""
-        armv7l:
+          imageTagSuffix: 'amd64'
+        arm32v7:
           poolImageName: 'RPi'
-          imageNameSuffix: 'armv7l'
-          isArm: "true"
-        arm64:
+          imageTagSuffix: 'arm32v7'
+        arm64v8:
           poolImageName: 'build-farm-coral'
-          imageNameSuffix: 'arm64'
-          isArm: ""
+          imageTagSuffix: 'arm64v8'
 
     pool: $(poolImageName)
 
@@ -46,32 +43,72 @@ jobs:
 
       - template: ./docker-task-template.yml
         parameters:
-          imageName: '$(imageName)-base-$(imageNameSuffix)'
-          imageTag: $(imageTag)
-          dockerFile: 'base/Dockerfile'
-          imageNameSuffix: '$(imageNameSuffix)'
-          isArm: '$(isArm)'
+          imageName: '$(imageName)-base'
+          imageTag: $(imageTag)-$(imageTagSuffix)
+          dockerFile: 'base/$(imageTagSuffix)/Dockerfile'
           step: 'base'
 
       - script: |
           docker run --rm \
             -v $(pwd)/tests:/src \
-            $(imageName)-base-$(imageNameSuffix):$(imageTag) \
+            $(imageName)-base:$(imageTag)-$(imageTagSuffix) \
             sh -c "cd /src && python3 -m pip install darcyai-engine && python3 -u base.py"
         displayName: 'Test base docker image'
 
       - template: ./docker-task-template.yml
         parameters:
-          imageName: '$(imageName)-coral-$(imageNameSuffix)'
-          imageTag: $(imageTag)
-          dockerFile: 'coral/Dockerfile'
-          imageNameSuffix: '$(imageNameSuffix)'
-          isArm: '$(isArm)'
+          imageName: '$(imageName)-coral'
+          imageTag: $(imageTag)-$(imageTagSuffix)
+          dockerFile: 'coral/$(imageTagSuffix)/Dockerfile'
           step: 'coral'
 
       - script: |
           docker run --rm \
             -v $(pwd)/tests:/src \
-            $(imageName)-coral-$(imageNameSuffix):$(imageTag) \
+            $(imageName)-coral:$(imageTag)-$(imageTagSuffix) \
             sh -c "cd /src && python3 -m pip install darcyai-coral && python3 -u coral.py"
         displayName: 'Test coral docker image'
+  
+  - job: DarcyAIDockerManifest
+    dependsOn: DarcyAIDockerImages
+
+    timeoutInMinutes: 240
+  
+    strategy:
+      matrix:
+        base:
+          step: 'base'
+        coral:
+          step: 'coral'
+
+    pool: 'Azure Pipelines'
+
+    variables:
+      imageName: 'edgeworx/darcy-ai'
+      imageTag: 'dev'
+      DOCKER_CLI_EXPERIMENTAL: enabled
+
+    steps:
+      - task: Docker@2
+        displayName: Login to Dockerhub
+        inputs:
+          command: login
+          containerRegistry: Edgeworx-DockerHub
+
+      - script: |
+          docker pull $(imageName)-$(step):$(imageTag)-amd64
+          docker pull $(imageName)-$(step):$(imageTag)-arm32v7
+          docker pull $(imageName)-$(step):$(imageTag)-arm64v8
+        displayName: 'Pull $(step) amd64, arm32v7, and arm64v8 docker images'
+
+      - script: |
+          docker manifest create \
+            $(imageName)-$(step):$(imageTag) \
+            --amend $(imageName)-$(step):$(imageTag)-amd64 \
+            --amend $(imageName)-$(step):$(imageTag)-arm32v7 \
+            --amend $(imageName)-$(step):$(imageTag)-arm64v8
+        displayName: 'Create $(step) image manifest'
+
+      - script: |
+          docker manifest push $(imageName)-$(step):$(imageTag)
+        displayName: 'Push $(step) image manifest'

@@ -5,10 +5,6 @@ parameters:
     type: string
   - name: dockerFile
     type: string
-  - name: imageNameSuffix
-    type: string
-  - name: isArm
-    type: string
   - name: step
     type: string
 
@@ -21,7 +17,7 @@ steps:
       Dockerfile: ${{ parameters.dockerFile }}
       tags: |
         ${{ parameters.imageTag }}
-      arguments: --build-arg BASE_IMAGE_TAG=${{ parameters.imageTag }} --build-arg IS_ARM=${{ parameters.isArm }} --build-arg BASE_IMAGE_SUFFIX=${{ parameters.imageNameSuffix }}
+      arguments: --build-arg BASE_IMAGE_TAG=${{ parameters.imageTag }}
   - task: Docker@2
     displayName: Push ${{ parameters.step }} image
     inputs:
