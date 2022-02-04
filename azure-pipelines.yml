@@ -31,7 +31,7 @@ jobs:
     pool: $(poolImageName)
 
     variables:
-      imageName: 'edgeworx/darcy-ai'
+      imageName: 'darcyai/darcy-ai'
       imageTag: 'dev'
 
     steps:
@@ -84,7 +84,7 @@ jobs:
     pool: 'Azure Pipelines'
 
     variables:
-      imageName: 'edgeworx/darcy-ai'
+      imageName: 'darcyai/darcy-ai'
       imageTag: 'dev'
       DOCKER_CLI_EXPERIMENTAL: enabled
 
@@ -93,7 +93,7 @@ jobs:
         displayName: Login to Dockerhub
         inputs:
           command: login
-          containerRegistry: Edgeworx-DockerHub
+          containerRegistry: DarcyAI-Dockerhub
 
       - script: |
           docker pull $(imageName)-$(step):$(imageTag)-amd64
