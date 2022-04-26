@@ -52,7 +52,7 @@ jobs:
           docker run --rm \
             -v $(pwd)/tests:/src \
             $(imageName)-base:$(imageTag)-$(imageTagSuffix) \
-            sh -c "cd /src && python3 -m pip install darcyai-engine && python3 -u base.py"
+            sh -c "cd /src && python3 -m pip install darcyai && python3 -u base.py"
         displayName: 'Test base docker image'
 
       - template: ./docker-task-template.yml
@@ -66,8 +66,22 @@ jobs:
           docker run --rm \
             -v $(pwd)/tests:/src \
             $(imageName)-coral:$(imageTag)-$(imageTagSuffix) \
-            sh -c "cd /src && python3 -m pip install darcyai-coral && python3 -u coral.py"
+            sh -c "cd /src && python3 -m pip install darcyai && python3 -u coral.py"
         displayName: 'Test coral docker image'
+
+      - template: ./docker-task-template.yml
+        parameters:
+          imageName: '$(imageName)-cpu'
+          imageTag: $(imageTag)-$(imageTagSuffix)
+          dockerFile: 'cpu/$(imageTagSuffix)/Dockerfile'
+          step: 'cpu'
+
+      - script: |
+          docker run --rm \
+            -v $(pwd)/tests:/src \
+            $(imageName)-cpu:$(imageTag)-$(imageTagSuffix) \
+            sh -c "cd /src && python3 -m pip install darcyai && python3 -u cpu.py"
+        displayName: 'Test CPU docker image'
   
   - job: DarcyAIDockerManifest
     dependsOn: DarcyAIDockerImages
