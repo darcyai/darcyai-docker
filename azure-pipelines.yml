@@ -94,6 +94,8 @@ jobs:
           step: 'base'
         coral:
           step: 'coral'
+        cpu:
+          step: 'cpu'
 
     pool: 'Azure Pipelines'
 
