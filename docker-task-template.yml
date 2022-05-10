@@ -16,6 +16,11 @@ steps:
       containerRegistry: DarcyAI-Dockerhub
 
   - script: |
+      docker buildx create --name darcyai-builder
+      docker buildx use darcyai-builder
+    displayName: 'Setup docker buildx builder'
+
+  - script: |
       docker buildx build -t ${{ parameters.imageName }}:${{ parameters.imageTag }} \
         --platform linux/amd64,linux/arm64,linux/arm/v7 \
         --file ${{ parameters.dockerFile }} .
