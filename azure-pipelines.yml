@@ -11,8 +11,6 @@ trigger:
       - CHANGELOG.md
 pr: none
   
-timeoutInMinutes: 240
-
 strategy:
   matrix:
     base:
