@@ -18,5 +18,5 @@ steps:
   - script: |
       docker buildx build -t ${{ parameters.imageName }}:${{ parameters.imageTag }} \
         --platform linux/amd64,linux/arm64,linux/arm/v7 \
-        --file ${{ parameters.dockerFile }}
+        --file ${{ parameters.dockerFile }} .
     displayName: 'Build and push ${{ parameters.step }} images'
