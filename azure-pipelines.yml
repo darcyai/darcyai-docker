@@ -11,120 +11,47 @@ trigger:
       - CHANGELOG.md
 pr: none
   
-jobs:
-  - job: DarcyAIDockerImages
+timeoutInMinutes: 240
 
-    timeoutInMinutes: 240
-  
-    strategy:
-      matrix:
-        amd64:
-          poolImageName: 'Azure Pipelines'
-          imageTagSuffix: 'amd64'
-        arm32v7:
-          poolImageName: 'RPi'
-          imageTagSuffix: 'arm32v7'
-        arm64v8:
-          poolImageName: 'build-farm-coral'
-          imageTagSuffix: 'arm64v8'
+strategy:
+  matrix:
+    base:
+      step: base
+    coral:
+      step: coral
+    cpu:
+      step: cpu
 
-    pool: $(poolImageName)
+pool: 'Azure Pipelines'
 
-    variables:
-      imageName: 'darcyai/darcy-ai'
-      imageTag: 'dev'
+variables:
+  DOCKER_CLI_EXPERIMENTAL: enabled
+  imageName: 'darcyai/darcy-ai'
+  imageTag: 'dev'
 
-    steps:
-      - script: |
-          RELEASE_TAG=$(git describe --tags --abbrev=0)
-          echo "##vso[task.setvariable variable=imageTag]$RELEASE_TAG"
-        condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
-        displayName: 'Set image tag'
+steps:
+- script: |
+    RELEASE_TAG=$(git describe --tags --abbrev=0)
+    echo "##vso[task.setvariable variable=imageTag]$RELEASE_TAG"
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+  displayName: 'Set image tag'
 
-      - template: ./docker-task-template.yml
-        parameters:
-          imageName: '$(imageName)-base'
-          imageTag: $(imageTag)-$(imageTagSuffix)
-          dockerFile: 'base/$(imageTagSuffix)/Dockerfile'
-          step: 'base'
+- script: |
+    sudo apt-get install -y qemu-user-static
+    sudo apt-get install -y binfmt-support
+    docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+  displayName: 'Install prerequisites'
 
-      - script: |
-          docker run --rm \
-            -v $(pwd)/tests:/src \
-            $(imageName)-base:$(imageTag)-$(imageTagSuffix) \
-            sh -c "cd /src && python3 -m pip install darcyai && python3 -u base.py"
-        displayName: 'Test base docker image'
+- template: ./docker-task-template.yml
+  parameters:
+    imageName: '$(imageName)-$(step)'
+    imageTag: $(imageTag)
+    dockerFile: '$(step)/Dockerfile'
+    step: $(step)
 
-      - template: ./docker-task-template.yml
-        parameters:
-          imageName: '$(imageName)-coral'
-          imageTag: $(imageTag)-$(imageTagSuffix)
-          dockerFile: 'coral/$(imageTagSuffix)/Dockerfile'
-          step: 'coral'
-
-      - script: |
-          docker run --rm \
-            -v $(pwd)/tests:/src \
-            $(imageName)-coral:$(imageTag)-$(imageTagSuffix) \
-            sh -c "cd /src && python3 -m pip install darcyai && python3 -u coral.py"
-        displayName: 'Test coral docker image'
-
-      - template: ./docker-task-template.yml
-        parameters:
-          imageName: '$(imageName)-cpu'
-          imageTag: $(imageTag)-$(imageTagSuffix)
-          dockerFile: 'cpu/$(imageTagSuffix)/Dockerfile'
-          step: 'cpu'
-
-      - script: |
-          docker run --rm \
-            -v $(pwd)/tests:/src \
-            $(imageName)-cpu:$(imageTag)-$(imageTagSuffix) \
-            sh -c "cd /src && python3 -m pip install darcyai && python3 -u cpu.py"
-        displayName: 'Test CPU docker image'
-  
-  - job: DarcyAIDockerManifest
-    dependsOn: DarcyAIDockerImages
-
-    timeoutInMinutes: 240
-  
-    strategy:
-      matrix:
-        base:
-          step: 'base'
-        coral:
-          step: 'coral'
-        cpu:
-          step: 'cpu'
-
-    pool: 'Azure Pipelines'
-
-    variables:
-      imageName: 'darcyai/darcy-ai'
-      imageTag: 'dev'
-      DOCKER_CLI_EXPERIMENTAL: enabled
-
-    steps:
-      - task: Docker@2
-        displayName: Login to Dockerhub
-        inputs:
-          command: login
-          containerRegistry: DarcyAI-Dockerhub
-
-      - script: |
-          docker pull $(imageName)-$(step):$(imageTag)-amd64
-          docker pull $(imageName)-$(step):$(imageTag)-arm32v7
-          docker pull $(imageName)-$(step):$(imageTag)-arm64v8
-        displayName: 'Pull $(step) amd64, arm32v7, and arm64v8 docker images'
-
-      - script: |
-          docker manifest create \
-            $(imageName)-$(step):$(imageTag) \
-            --amend $(imageName)-$(step):$(imageTag)-amd64 \
-            --amend $(imageName)-$(step):$(imageTag)-arm32v7 \
-            --amend $(imageName)-$(step):$(imageTag)-arm64v8
-        displayName: 'Create $(step) image manifest'
-
-      - script: |
-          docker manifest push $(imageName)-$(step):$(imageTag)
-        displayName: 'Push $(step) image manifest'
+- script: |
+    docker run --rm \
+      -v $(pwd)/tests:/src \
+      $(imageName)-$(step):$(imageTag) \
+      sh -c "cd /src && python3 -m pip install darcyai && python3 -u $(step).py"
+  displayName: 'Test $(step) docker image'
