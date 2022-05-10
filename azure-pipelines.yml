@@ -31,55 +31,29 @@ steps:
     docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
   displayName: 'Install prerequisites'
 
-- script: |
-    docker buildx create --name darcyai-builder
-    docker buildx use darcyai-builder
-  displayName: 'Setup docker buildx builder'
-
 - task: Docker@2
   displayName: Login to Dockerhub
   inputs:
     command: login
     containerRegistry: DarcyAI-Dockerhub
 
-- script: |
-    docker buildx build -t $(imageName)-base:$(imageTag) \
-      --platform linux/amd64,linux/arm64,linux/arm/v7 \
-      --build-arg BASE_IMAGE_TAG=$(imageTag) \
-      --file base/Dockerfile .
-  displayName: 'Build and push base images'
+- template: ./docker-task-template.yml
+  parameters:
+    imageName: '$(imageName)-base'
+    imageTag: $(imageTag)
+    dockerFile: 'base/Dockerfile'
+    step: base
 
-- script: |
-    docker run --rm \
-      -v $(pwd)/tests:/src \
-      $(imageName)-base:$(imageTag) \
-      sh -c "cd /src && python3 -m pip install darcyai && python3 -u base.py"
-  displayName: 'Test base docker image'
+- template: ./docker-task-template.yml
+  parameters:
+    imageName: '$(imageName)-coral'
+    imageTag: $(imageTag)
+    dockerFile: 'coral/Dockerfile'
+    step: coral
 
-- script: |
-    docker buildx build -t $(imageName)-coral:$(imageTag) \
-      --platform linux/amd64,linux/arm64,linux/arm/v7 \
-      --build-arg BASE_IMAGE_TAG=$(imageTag) \
-      --file coral/Dockerfile .
-  displayName: 'Build and push coral images'
-
-- script: |
-    docker run --rm \
-      -v $(pwd)/tests:/src \
-      $(imageName)-coral:$(imageTag) \
-      sh -c "cd /src && python3 -m pip install darcyai && python3 -u coral.py"
-  displayName: 'Test coral docker image'
-
-- script: |
-    docker buildx build -t $(imageName)-cpu:$(imageTag) \
-      --platform linux/amd64,linux/arm64,linux/arm/v7 \
-      --build-arg BASE_IMAGE_TAG=$(imageTag) \
-      --file cpu/Dockerfile .
-  displayName: 'Build and push cpu images'
-
-- script: |
-    docker run --rm \
-      -v $(pwd)/tests:/src \
-      $(imageName)-cpu:$(imageTag) \
-      sh -c "cd /src && python3 -m pip install darcyai && python3 -u cpu.py"
-  displayName: 'Test cpu docker image'
+- template: ./docker-task-template.yml
+  parameters:
+    imageName: '$(imageName)-cpu'
+    imageTag: $(imageTag)
+    dockerFile: 'cpu/Dockerfile'
+    step: cpu
