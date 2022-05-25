@@ -1,4 +1,4 @@
-ARG BASE_IMAGE_TAG=dev-arm32v7
+ARG BASE_IMAGE_TAG=dev
 FROM darcyai/darcy-ai-base:$BASE_IMAGE_TAG
 
 RUN pip install tflite-runtime

@@ -9,21 +9,21 @@ parameters:
     type: string
 
 steps:
-  - task: Docker@2
-    displayName: Build ${{ parameters.step }} image
-    inputs:
-      repository: ${{ parameters.imageName }}
-      command: build
-      Dockerfile: ${{ parameters.dockerFile }}
-      tags: |
-        ${{ parameters.imageTag }}
-      arguments: --build-arg BASE_IMAGE_TAG=${{ parameters.imageTag }}
-  - task: Docker@2
-    displayName: Push ${{ parameters.step }} image
-    inputs:
-      containerRegistry: 'DarcyAI-Dockerhub'
-      repository: ${{ parameters.imageName }}
-      command: push
-      Dockerfile: ${{ parameters.dockerFile }}
-      tags: |
-        ${{ parameters.imageTag }}
+  - script: |
+      docker buildx create --name darcyai-${{ parameters.step }}-builder
+      docker buildx use darcyai-${{ parameters.step }}-builder
+    displayName: 'Setup docker buildx builder for ${{ parameters.step }} images'
+
+  - script: |
+      docker buildx build -t ${{ parameters.imageName }}:${{ parameters.imageTag }} \
+        --platform linux/amd64,linux/arm64,linux/arm/v7 \
+        --push \
+        --file ${{ parameters.dockerFile }} .
+    displayName: 'Build and push ${{ parameters.step }} images'
+
+  - script: |
+      docker run --rm \
+        -v $(pwd)/tests:/src \
+        ${{ parameters.imageName }}:${{ parameters.imageTag }} \
+        sh -c "cd /src && python3 -m pip install darcyai && python3 -u ${{ parameters.step }}.py"
+    displayName: 'Test ${{ parameters.step }} docker image'

@@ -1,4 +1,4 @@
-ARG BASE_IMAGE_TAG=dev-arm64v8
+ARG BASE_IMAGE_TAG=dev
 FROM darcyai/darcy-ai-base:$BASE_IMAGE_TAG
 
 RUN echo "deb https://packages.cloud.google.com/apt coral-edgetpu-stable main" | tee /etc/apt/sources.list.d/coral-edgetpu.list
