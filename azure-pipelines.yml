@@ -57,3 +57,10 @@ steps:
     imageTag: $(imageTag)
     dockerFile: 'cpu/Dockerfile'
     step: cpu
+
+- template: ./docker-task-template.yml
+  parameters:
+    imageName: '$(imageName)'
+    imageTag: $(imageTag)
+    dockerFile: 'universal/Dockerfile'
+    step: universal
