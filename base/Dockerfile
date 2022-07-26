@@ -32,3 +32,5 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
     else \
         pip install imutils==0.5.4 pillow==8.3.2 opencv-python==4.5.4.60; \
     fi
+    
+   ENV DARCYAI_IN_DOCKER="True"
